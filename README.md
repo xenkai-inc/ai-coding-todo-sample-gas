@@ -141,12 +141,11 @@ npm run test
 
 ---
 
-## 配布用 ZIP の作り方（運営メモ）
+## ダウンロードの仕方
 
-受講者への配布 ZIP は `git archive` で作成する（`.DS_Store`・`node_modules/`・`.clasp.json` など git 管理外のファイルが自動で除外される）。
+1. GitHub のこのページ（https://github.com/xenkai-inc/ai-coding-todo-sample-gas ）を開く
+2. 緑の「Code」ボタン →「Download ZIP」を押す
+3. ZIP を展開し、できたフォルダ（`ai-coding-todo-sample-gas-main`）を Develop フォルダの下に置く
 
-```bash
-git archive --format=zip --prefix=ai-coding-todo-sample-gas/ HEAD -o ai-coding-todo-sample-gas.zip
-```
-
-Finder の右クリック圧縮は `.DS_Store` が混入するため使わない。
+> git を使える人は `git clone https://github.com/xenkai-inc/ai-coding-todo-sample-gas.git` でも取得できます。
+> どちらの方法でも、`node_modules/` や `.clasp.json` は含まれません（セットアップで各自作られます）。
