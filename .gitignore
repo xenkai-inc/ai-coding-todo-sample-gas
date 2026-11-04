@@ -1,0 +1,13 @@
+# テスト用の道具（npm install で再生成される）
+node_modules/
+
+# Google 側のファイルとのひも付け（受講者ごとに clasp create で作られる。配布しない）
+.clasp.json
+
+# 秘密情報（このアプリでは使わないが、万一に備えて必ず除外する）
+.env
+.env.*
+
+# OS が作る一時ファイル
+.DS_Store
+*.log

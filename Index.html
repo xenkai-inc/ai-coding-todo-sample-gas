@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <base target="_top" />
+    <meta charset="UTF-8" />
+    <!-- 画面の見た目（方針: spec/design.md）。色は CSS 変数（--color-*）で定義し、値を各所に直書きしない -->
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+      /* ---- カラートークン（常にライトトーン固定） ---- */
+      :root {
+        --color-primary: #18181b;
+        --color-on-primary: #ffffff;
+        --color-accent: #2563eb;
+        --color-background: #fafafa;
+        --color-surface: #ffffff;
+        --color-foreground: #09090b;
+        --color-muted: #71717a;
+        --color-border: #e4e4e7;
+        --color-destructive: #dc2626;
+
+        /* 余白スケール（4 / 8 / 12 / 16 / 24 / 32） */
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-6: 24px;
+        --space-8: 32px;
+
+        --radius: 8px;
+        --transition: 180ms ease;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Inter', system-ui, -apple-system, 'Hiragino Kaku Gothic ProN',
+          'Noto Sans JP', sans-serif;
+        background: var(--color-background);
+        color: var(--color-foreground);
+        line-height: 1.6;
+      }
+
+      /* ---- 画面全体（中央寄せ・最大 560px） ---- */
+      .app {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: var(--space-8) var(--space-4);
+      }
+
+      .app__header {
+        margin-bottom: var(--space-6);
+      }
+
+      .app__title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .app__subtitle {
+        margin: var(--space-2) 0 0;
+        color: var(--color-muted);
+        font-size: 14px;
+      }
+
+      /* ---- 追加フォーム ---- */
+      .add-form {
+        display: flex;
+        gap: var(--space-2);
+        margin-bottom: var(--space-6);
+      }
+
+      .add-form__input {
+        flex: 1;
+        min-width: 0;
+        padding: var(--space-3) var(--space-4);
+        font: inherit;
+        color: var(--color-foreground);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        transition: border-color var(--transition), box-shadow var(--transition);
+      }
+
+      .add-form__input::placeholder {
+        color: var(--color-muted);
+      }
+
+      .add-form__input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent);
+      }
+
+      /* ---- ボタン共通 ---- */
+      .button {
+        font: inherit;
+        font-weight: 600;
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: background var(--transition), color var(--transition),
+          border-color var(--transition), opacity var(--transition);
+      }
+
+      .button:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+      }
+
+      .button--primary {
+        padding: var(--space-3) var(--space-6);
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+        white-space: nowrap;
+      }
+
+      .button--primary:hover {
+        opacity: 0.88;
+      }
+
+      .button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* ---- 状態の表示（読み込み中・保存中・エラー） ---- */
+      .status {
+        min-height: 20px;
+        margin: 0 0 var(--space-3);
+        color: var(--color-muted);
+        font-size: 13px;
+      }
+
+      .status--error {
+        color: var(--color-destructive);
+      }
+
+      /* ---- タスク一覧 ---- */
+      .task-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+      }
+
+      .task {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3);
+        border-radius: var(--radius);
+        transition: background var(--transition);
+      }
+
+      .task:hover {
+        background: color-mix(in srgb, var(--color-muted) 12%, transparent);
+      }
+
+      .task__checkbox {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        accent-color: var(--color-accent);
+        cursor: pointer;
+      }
+
+      .task__title {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+      }
+
+      /* 完了したタスク: 打ち消し線 + 控えめな色 */
+      .task--done .task__title {
+        text-decoration: line-through;
+        color: var(--color-muted);
+      }
+
+      /* 削除ボタン（アイコンのみ・普段は控えめ、ホバーで赤） */
+      .task__delete {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        padding: 0;
+        color: var(--color-muted);
+        background: transparent;
+        border: none;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: color var(--transition), background var(--transition);
+      }
+
+      .task__delete:hover {
+        color: var(--color-destructive);
+        background: color-mix(in srgb, var(--color-destructive) 12%, transparent);
+      }
+
+      .task__delete:focus-visible {
+        outline: 2px solid var(--color-destructive);
+        outline-offset: 2px;
+      }
+
+      .task__delete svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* ---- 空状態 ---- */
+      .empty-state {
+        padding: var(--space-8) var(--space-4);
+        text-align: center;
+        color: var(--color-muted);
+        font-size: 14px;
+      }
+
+      /* ---- 動きを減らす設定を尊重 ---- */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <h1 class="app__title">やること</h1>
+        <p class="app__subtitle">業務タスクをここに書き出して、消し込んでいきましょう。</p>
+      </header>
+
+      <!-- 追加フォーム -->
+      <form id="add-form" class="add-form" autocomplete="off">
+        <input
+          id="new-task-input"
+          class="add-form__input"
+          type="text"
+          name="title"
+          placeholder="やることを入力（例：見積を送る）"
+          aria-label="新しいタスク"
+        />
+        <button id="add-button" class="button button--primary" type="submit">追加</button>
+      </form>
+
+      <!-- 読み込み中・保存中・エラーの表示 -->
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <!-- タスク一覧（下のスクリプトが中身を描画する） -->
+      <ul id="task-list" class="task-list" aria-label="タスク一覧"></ul>
+    </main>
+
+    <script>
+      // 画面の組み立て・イベント処理
+      //
+      // ここは「画面」担当です。タスクの追加・完了・削除と保存は、
+      // サーバー側（Code.gs）に google.script.run でお願いします。
+      //   操作する → Code.gs が保存して新しい一覧を返す → 画面を描き直す
+      // という流れを繰り返します。
+
+      var form = document.querySelector('#add-form');
+      var input = document.querySelector('#new-task-input');
+      var addButton = document.querySelector('#add-button');
+      var list = document.querySelector('#task-list');
+      var statusText = document.querySelector('#status');
+
+      /** 今の一覧（Code.gs から返ってきたもの） */
+      var tasks = [];
+      /** 保存中は二重に操作できないようにする */
+      var busy = false;
+
+      function setStatus(message, isError) {
+        statusText.textContent = message || '';
+        statusText.className = isError ? 'status status--error' : 'status';
+      }
+
+      function setBusy(next) {
+        busy = next;
+        addButton.disabled = next;
+      }
+
+      /**
+       * Code.gs の関数を呼ぶ。終わったら一覧を描き直す。
+       * 失敗したときは、内部の情報を出さずに短いメッセージだけ表示する。
+       */
+      function callServer(functionName, arg, message, onFailure) {
+        if (busy) return;
+        setBusy(true);
+        setStatus(message);
+        var runner = google.script.run
+          .withSuccessHandler(function (next) {
+            tasks = next || [];
+            setBusy(false);
+            setStatus('');
+            render();
+          })
+          .withFailureHandler(function () {
+            setBusy(false);
+            setStatus('保存できませんでした。少し待ってから、もう一度お試しください。', true);
+            if (onFailure) onFailure();
+            render(); // チェックボックスの見た目を、保存済みの状態に戻す
+          });
+        if (arg === undefined) {
+          runner[functionName]();
+        } else {
+          runner[functionName](arg);
+        }
+      }
+
+      /** ゴミ箱アイコン（絵文字ではなく SVG を使う） */
+      function trashIconSvg() {
+        return (
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"' +
+          ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M3 6h18" />' +
+          '<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />' +
+          '<path d="M10 11v6" />' +
+          '<path d="M14 11v6" />' +
+          '<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />' +
+          '</svg>'
+        );
+      }
+
+      /** タスク1件分の <li> を作る */
+      function createTaskElement(task) {
+        var li = document.createElement('li');
+        li.className = task.done ? 'task task--done' : 'task';
+        li.dataset.id = task.id;
+
+        // チェックボックス（完了の切り替え）
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'task__checkbox';
+        checkbox.checked = task.done;
+        checkbox.setAttribute('aria-label', '「' + task.title + '」を完了にする');
+        checkbox.addEventListener('change', function () {
+          if (busy) {
+            checkbox.checked = task.done; // 保存中は切り替えない
+            return;
+          }
+          callServer('toggleTaskById', task.id, '保存しています…');
+        });
+
+        // タスク文字（textContent で入れる = 入力をそのまま HTML として解釈させない安全策）
+        var title = document.createElement('span');
+        title.className = 'task__title';
+        title.textContent = task.title;
+
+        // 削除ボタン
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'task__delete';
+        del.innerHTML = trashIconSvg();
+        del.setAttribute('aria-label', '「' + task.title + '」を削除');
+        del.addEventListener('click', function () {
+          callServer('removeTaskById', task.id, '削除しています…');
+        });
+
+        li.append(checkbox, title, del);
+        return li;
+      }
+
+      /** 今の一覧を画面に描き直す */
+      function render() {
+        list.innerHTML = '';
+
+        if (tasks.length === 0) {
+          var empty = document.createElement('li');
+          empty.className = 'empty-state';
+          empty.textContent = 'まだタスクがありません。上の欄から追加しましょう。';
+          list.append(empty);
+          return;
+        }
+
+        tasks.forEach(function (task) {
+          list.append(createTaskElement(task));
+        });
+      }
+
+      // ---- 追加フォームの送信（ボタン / Enter どちらでも） ----
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (input.value.trim() === '') {
+          input.focus();
+          return; // 空は送らない（Code.gs 側でも同じチェックをしている）
+        }
+        if (busy) return;
+        var title = input.value;
+        input.value = '';
+        callServer('submitNewTask', title, '保存しています…', function () {
+          input.value = title; // 保存できなかったときは、入力した文字を戻す
+        });
+        input.focus();
+      });
+
+      // ---- 最初の読み込み ----
+      callServer('getTasks', undefined, '読み込んでいます…');
+    </script>
+  </body>
+</html>

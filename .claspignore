@@ -1,0 +1,10 @@
+# Google に送るファイルの指定（clasp push の対象）
+# いったん全部を除外し、アプリ本体だけを送る。
+# tests/・package.json・node_modules/・spec/・README.md は PC にだけ残る。
+**/**
+!appsscript.json
+!*.gs
+!*.html
+
+# サーバー側のコードを .js で書いている場合は、下の行の # を外してファイル名を合わせる
+# !Code.js

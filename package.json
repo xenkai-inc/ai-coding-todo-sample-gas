@@ -1,0 +1,12 @@
+{
+  "name": "ai-coding-todo-sample-gas",
+  "private": true,
+  "description": "AIコーディング入門 演習用サンプル TODO アプリ（Google Apps Script 版）",
+  "scripts": {
+    "test": "vitest run",
+    "push": "clasp push --force"
+  },
+  "devDependencies": {
+    "vitest": "^5.1.0"
+  }
+}
